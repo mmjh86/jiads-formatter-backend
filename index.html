@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JIADS Manuscript Formatter</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Source+Sans+3:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:   #0f1f3d;
+    --gold:   #c9a84c;
+    --gold-lt:#e8c96a;
+    --cream:  #faf8f3;
+    --muted:  #8a8070;
+    --border: #ddd8cc;
+    --red:    #c0392b;
+    --green:  #1a6e3c;
+  }
+
+  body {
+    font-family: 'Source Sans 3', sans-serif;
+    background: var(--cream);
+    color: var(--navy);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--navy);
+    padding: 1.5rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border-bottom: 3px solid var(--gold);
+  }
+  .journal-mark {
+    width: 44px; height: 44px;
+    background: var(--gold);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-weight: 600; font-size: 1.1rem;
+    color: var(--navy);
+    flex-shrink: 0;
+  }
+  .journal-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    color: #fff;
+    font-weight: 400;
+    line-height: 1.3;
+  }
+  .journal-name span {
+    display: block;
+    font-size: .7rem;
+    color: var(--gold);
+    font-family: 'Source Sans 3', sans-serif;
+    font-weight: 300;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  /* ── Main layout ── */
+  main {
+    flex: 1;
+    max-width: 620px;
+    width: 100%;
+    margin: 3rem auto;
+    padding: 0 1.5rem;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: .4rem;
+    line-height: 1.2;
+  }
+  .subtitle {
+    font-size: .95rem;
+    color: var(--muted);
+    font-weight: 300;
+    margin-bottom: 2.5rem;
+  }
+
+  /* ── Card ── */
+  .card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  /* ── Drop zone ── */
+  .drop-zone {
+    border: 1.5px dashed var(--border);
+    border-radius: 6px;
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+    position: relative;
+  }
+  .drop-zone:hover, .drop-zone.drag-over {
+    border-color: var(--gold);
+    background: #fdf9f0;
+  }
+  .drop-zone.has-file {
+    border-color: var(--green);
+    background: #f0faf4;
+    border-style: solid;
+  }
+  .drop-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+  .drop-icon {
+    font-size: 2rem;
+    margin-bottom: .6rem;
+    display: block;
+  }
+  .drop-label {
+    font-size: .9rem;
+    color: var(--muted);
+  }
+  .drop-label strong {
+    color: var(--gold);
+    font-weight: 500;
+  }
+  .file-chosen {
+    font-size: .85rem;
+    font-weight: 500;
+    color: var(--green);
+    margin-top: .5rem;
+  }
+
+  /* ── Fields ── */
+  .fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: .75rem;
+    margin-top: 1.25rem;
+  }
+  .field label {
+    display: block;
+    font-size: .75rem;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: .3rem;
+  }
+  .field input {
+    width: 100%;
+    padding: .5rem .75rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: .9rem;
+    font-family: 'Source Sans 3', sans-serif;
+    color: var(--navy);
+    background: var(--cream);
+    transition: border-color .15s;
+  }
+  .field input:focus {
+    outline: none;
+    border-color: var(--gold);
+  }
+
+  /* ── Button ── */
+  .btn {
+    display: block;
+    width: 100%;
+    margin-top: 1.5rem;
+    padding: .85rem;
+    background: var(--navy);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    letter-spacing: .03em;
+    transition: background .2s, transform .1s;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn:hover:not(:disabled) { background: #1a3060; }
+  .btn:active:not(:disabled) { transform: scale(.99); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .btn.loading::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: -100%;
+    width: 100%; height: 2px;
+    background: var(--gold);
+    animation: progress 2s ease-in-out infinite;
+  }
+  @keyframes progress {
+    0%   { left: -100%; }
+    100% { left: 100%; }
+  }
+
+  /* ── Status ── */
+  .status {
+    border-radius: 6px;
+    padding: .9rem 1.1rem;
+    font-size: .9rem;
+    display: none;
+    align-items: flex-start;
+    gap: .7rem;
+    margin-top: 1rem;
+  }
+  .status.show { display: flex; }
+  .status.info    { background: #eef3fb; color: #1a4080; border: 1px solid #bed0f0; }
+  .status.success { background: #edfaf3; color: var(--green); border: 1px solid #9ddcb8; }
+  .status.error   { background: #fdf0ef; color: var(--red);   border: 1px solid #f0b8b3; }
+  .status-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── Download ── */
+  .download-btn {
+    display: none;
+    width: 100%;
+    margin-top: 1rem;
+    padding: .85rem;
+    background: var(--green);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    transition: background .2s;
+  }
+  .download-btn:hover { background: #155c32; }
+  .download-btn.show { display: block; }
+
+  /* ── Footer ── */
+  footer {
+    text-align: center;
+    padding: 1.5rem;
+    font-size: .8rem;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="journal-mark">J</div>
+  <div class="journal-name">
+    Journal of Informatics and Advanced Data Science
+    <span>Manuscript Formatter</span>
+  </div>
+</header>
+
+<main>
+  <h1>Format your manuscript</h1>
+  <p class="subtitle">Upload your .docx and get a JIADS-formatted version instantly.</p>
+
+  <div class="card">
+    <!-- Drop zone -->
+    <div class="drop-zone" id="dropZone">
+      <input type="file" id="fileInput" accept=".docx">
+      <span class="drop-icon">📄</span>
+      <div class="drop-label">
+        <strong>Click to choose</strong> or drag your manuscript here<br>
+        <small>.docx files only</small>
+      </div>
+      <div class="file-chosen" id="fileName"></div>
+    </div>
+
+    <!-- Volume / Issue / Year -->
+    <div class="fields">
+      <div class="field">
+        <label>Volume</label>
+        <input type="text" id="volume" placeholder="e.g. 3">
+      </div>
+      <div class="field">
+        <label>Issue</label>
+        <input type="text" id="issue" placeholder="e.g. 1">
+      </div>
+      <div class="field">
+        <label>Year</label>
+        <input type="text" id="year" placeholder="e.g. 2024" value="2024">
+      </div>
+    </div>
+
+    <button class="btn" id="formatBtn" disabled onclick="formatManuscript()">
+      Format manuscript
+    </button>
+
+    <div class="status" id="status">
+      <span class="status-icon" id="statusIcon"></span>
+      <span id="statusText"></span>
+    </div>
+
+    <a class="download-btn" id="downloadBtn">
+      ⬇ Download formatted manuscript
+    </a>
+  </div>
+</main>
+
+<footer>
+  JIADS Formatter · Powered by <a href="https://jiads-formatter-backend.onrender.com/docs" target="_blank" style="color:var(--gold)">jiads-formatter-backend.onrender.com</a>
+</footer>
+
+<script>
+  const API = 'https://jiads-formatter-backend.onrender.com';
+  const fileInput  = document.getElementById('fileInput');
+  const dropZone   = document.getElementById('dropZone');
+  const fileName   = document.getElementById('fileName');
+  const formatBtn  = document.getElementById('formatBtn');
+  const status     = document.getElementById('status');
+  const statusIcon = document.getElementById('statusIcon');
+  const statusText = document.getElementById('statusText');
+  const downloadBtn= document.getElementById('downloadBtn');
+
+  let selectedFile = null;
+
+  // ── File selection ──────────────────────────────────────────────
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) setFile(fileInput.files[0]);
+  });
+
+  dropZone.addEventListener('dragover', e => {
+    e.preventDefault();
+    dropZone.classList.add('drag-over');
+  });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
+  });
+
+  function setFile(file) {
+    if (!file.name.endsWith('.docx')) {
+      showStatus('error', '✕', 'Only .docx files are accepted.');
+      return;
+    }
+    selectedFile = file;
+    fileName.textContent = file.name;
+    dropZone.classList.add('has-file');
+    formatBtn.disabled = false;
+    downloadBtn.classList.remove('show');
+    hideStatus();
+  }
+
+  // ── Format ─────────────────────────────────────────────────────
+  async function formatManuscript() {
+    if (!selectedFile) return;
+
+    const volume = document.getElementById('volume').value.trim() || 'X';
+    const issue  = document.getElementById('issue').value.trim()  || 'Y';
+    const year   = document.getElementById('year').value.trim()   || '2024';
+
+    formatBtn.disabled = true;
+    formatBtn.classList.add('loading');
+    formatBtn.textContent = 'Formatting…';
+    downloadBtn.classList.remove('show');
+    showStatus('info', '⏳', 'Uploading and formatting your manuscript. This may take up to 30 seconds on first request (server wakes up).');
+
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+    // Pass volume/issue/year as query params
+    const url = `${API}/format?volume=${encodeURIComponent(volume)}&issue=${encodeURIComponent(issue)}&year=${encodeURIComponent(year)}`;
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({ detail: response.statusText }));
+        throw new Error(err.detail || `Server error ${response.status}`);
+      }
+
+      // Download the returned file
+      const blob = await response.blob();
+      const dlUrl = URL.createObjectURL(blob);
+      downloadBtn.href = dlUrl;
+      downloadBtn.download = 'JIADS_formatted.docx';
+      downloadBtn.classList.add('show');
+
+      showStatus('success', '✓', `Formatted successfully. Vol. ${volume}, Issue ${issue}, ${year}.`);
+      formatBtn.textContent = 'Format another';
+      formatBtn.disabled = false;
+      formatBtn.classList.remove('loading');
+
+    } catch (err) {
+      showStatus('error', '✕', `Error: ${err.message}`);
+      formatBtn.textContent = 'Format manuscript';
+      formatBtn.disabled = false;
+      formatBtn.classList.remove('loading');
+    }
+  }
+
+  // ── Helpers ────────────────────────────────────────────────────
+  function showStatus(type, icon, text) {
+    status.className = `status show ${type}`;
+    statusIcon.textContent = icon;
+    statusText.textContent = text;
+  }
+  function hideStatus() {
+    status.className = 'status';
+  }
+</script>
+</body>
+</html>
