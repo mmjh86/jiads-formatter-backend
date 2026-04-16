@@ -14,13 +14,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY citations.py layout_formatter.py pipeline.py style_profiles.py main.py ./
 
 # Copy CSL files if present, else download them
-COPY csl_styles/ ./csl_styles/
-RUN if [ ! -f csl_styles/ieee.csl ]; then \
-      mkdir -p csl_styles && \
-      curl -L -o csl_styles/ieee.csl    https://www.zotero.org/styles/ieee && \
-      curl -L -o csl_styles/apa-7.csl   https://www.zotero.org/styles/apa-7th-edition && \
-      curl -L -o csl_styles/harvard.csl https://www.zotero.org/styles/harvard-university-of-warwick; \
-    fi
+RUN mkdir -p csl_styles && \
+    curl -L -o csl_styles/ieee.csl    https://www.zotero.org/styles/ieee && \
+    curl -L -o csl_styles/apa-7.csl   https://www.zotero.org/styles/apa-7th-edition && \
+    curl -L -o csl_styles/harvard.csl https://www.zotero.org/styles/harvard-university-of-warwick
 
 COPY entrypoint.sh .
 RUN chmod +x entrypoint.sh
