@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: manuscript-formatter
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: MANUSCRIPT_UPLOAD_DIR
+        value: /tmp/uploads
+      - key: MANUSCRIPT_OUTPUT_DIR
+        value: /tmp/outputs
+      - key: MANUSCRIPT_DB_PATH
+        value: /tmp/jobs.db
