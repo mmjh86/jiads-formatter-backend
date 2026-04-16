@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.pyo
+*.db
+*.db-journal
+.env
+uploads/
+outputs/
+test_*.py
+*_test.py
+.pytest_cache/
+.coverage
+.git/
+.gitignore
+README.md
+.DS_Store

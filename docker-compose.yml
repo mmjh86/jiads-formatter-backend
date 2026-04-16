@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - MANUSCRIPT_UPLOAD_DIR=/app/uploads
+      - MANUSCRIPT_OUTPUT_DIR=/app/outputs
+      - MANUSCRIPT_DB_PATH=/app/jobs.db
+    volumes:
+      - ./uploads:/app/uploads
+      - ./outputs:/app/outputs
+      - ./jobs.db:/app/jobs.db
+    restart: unless-stopped
