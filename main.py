@@ -1,5 +1,5 @@
 # main.py
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Query
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import os
@@ -14,7 +14,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Use /tmp on Render (ephemeral filesystem)
 UPLOAD_DIR = os.environ.get("MANUSCRIPT_UPLOAD_DIR", "/tmp/uploads")
 OUTPUT_DIR = os.environ.get("MANUSCRIPT_OUTPUT_DIR", "/tmp/outputs")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -27,7 +26,12 @@ def root():
 
 
 @app.post("/format")
-async def format_manuscript(file: UploadFile = File(...)):
+async def format_manuscript(
+    file:   UploadFile = File(...),
+    volume: str = Query(default="0"),
+    issue:  str = Query(default="0"),
+    year:   str = Query(default="2026"),
+):
     if not file.filename.endswith(".docx"):
         raise HTTPException(400, "Only .docx files are accepted")
 
@@ -41,7 +45,10 @@ async def format_manuscript(file: UploadFile = File(...)):
     api_key = os.environ.get("ANTHROPIC_API_KEY")
 
     try:
-        format_jiads_manuscript(input_path, output_path, api_key)
+        format_jiads_manuscript(
+            input_path, output_path, api_key,
+            volume=volume, issue=issue, year=year,
+        )
         return FileResponse(
             output_path,
             filename="JIADS_formatted.docx",
